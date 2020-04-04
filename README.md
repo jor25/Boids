@@ -1,4 +1,5 @@
 # Boids
+Simulate complex and coordinated collision avoidance
 
 # Background:
 Boids are computer generated motion of animals such as flocks of birds or schools of fish.
