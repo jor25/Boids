@@ -15,6 +15,7 @@ There are three main rules to the movement pattern of boids.
 # Set Up:
 * `pip install numpy`
 * `pip install pygame`
+* `pip install pillow`
 
 
 # Resources:
@@ -24,4 +25,6 @@ There are three main rules to the movement pattern of boids.
 * Boid Background information:
     * https://www.red3d.com/cwr/boids/
 
+* Draw lines:
+    * https://stackoverflow.com/questions/10354638/pygame-draw-single-pixel
 
