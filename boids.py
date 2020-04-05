@@ -1,6 +1,7 @@
 # The Boid class file
 import pygame
 import numpy as np
+from math import sin, cos
 
 class Boid:
     def __init__(self, id, coords):
@@ -13,37 +14,49 @@ class Boid:
         self.id = id        # Player's ID number
         self.x, self.y, self.w, self.h = coords         # Initalize coords
         self.hitbox = (self.x, self.y, self.w, self.h)  # Set up location
-        self.vel = 5           # How fast the player moves
+        self.vel = 5            # How fast the player moves - hypotenuse
+        self.vis_dist = 10      # How far can boid see
+        self.vis_angle = 150    # Vision of +150 or -150 degrees
+        self.rotate_degree = 1  # Can rotate 5 degrees per move
+        self.true_angle = 90    # Facing directly up at first
 
-    def do_move(self, game, move=0):
+    def get_coords(self, radius, theta):
         '''
-        Allow the boid to move in certain ways.
+        Remeber that the top left corner is 0,0 and the bottom right corner is screen_w, screen_h.
+        :param radius:
+        :param theta:
+        :return:
+        '''
+        self.true_angle += theta                # Keep track of true angle
+        y = radius * sin(self.true_angle)       # Get y coordinate
+        x = radius * cos(self.true_angle)       # Get x coordinate
+        return -x, y                            # Give back flipped x, regular y and return that
+
+    def do_move(self, game, move):
+        '''
+        Allow the boid to move in certain ways. ie - rotate left or right
         :param game:
         :param move:
         :return:
         '''
-        move = np.random.choice(4)
-        if move == 0:       # Move right
-            if self.x < game.screen_w - (self.w + self.vel):    # Within right wall
-                self.x += self.vel
 
-        elif move == 1:     # Move left
-            if self.x > self.vel:   # Within the left bound
-                self.x -= self.vel
+        if move == 0:       # Rotate left
+            x, y = self.get_coords(self.vel, self.rotate_degree)
 
-        elif move == 2:     # Move Up
-            if self.y > self.vel:   # Within the upper bound
-                self.y -= self.vel
+        elif move == 1:     # Rotate right
+            x, y = self.get_coords(self.vel, -self.rotate_degree)
 
-        elif move == 3:     # Move Down
-            if self.y < game.screen_h - (self.h + self.vel):    # Within right wall
-                self.y += self.vel
+        self.x += int(x)  # New x location
+        self.y += int(y)  # New y location
+
+        # Hit a wall, then undo the move - Angle will still remain modified
+        if not game.screen_w - (self.w + self.vel) > self.x > self.vel or not self.vel < self.y < game.screen_h - (self.h + self.vel):
+            #print("undo move")
+            self.x -= int(x)  # Undo x location
+            self.y -= int(y)  # Undo y location
 
         # Update the hitbox
         self.hitbox = (self.x, self.y, self.w, self.h)
-
-
-        pass
 
     def separation(self):
         pass

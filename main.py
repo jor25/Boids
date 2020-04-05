@@ -1,6 +1,6 @@
 # Main File where program where execution happens.
 
-import numpy
+import numpy as np
 import pygame
 import boids as bd
 
@@ -22,14 +22,16 @@ class Game:
         Run the game.
         :return:
         '''
-        while not self.crash:   # Keep going while the game hasn't ended.
+        clock = pygame.time.Clock()
+        while not self.crash:                   # Keep going while the game hasn't ended.
+            #clock.tick(5)                      # Frames per second
             for event in pygame.event.get():    # Get game close event - if user closes game window
                 if event.type == pygame.QUIT:
                     self.crash = True           # Crash will get us out of the game loop
 
             # Allow all boids to make a move once per frame
             for boid in self.boids:
-                boid.do_move(self)
+                boid.do_move(self, np.random.choice(2))
 
             # Draw everything on screen once per frame
             self.draw_window()
