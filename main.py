@@ -40,6 +40,8 @@ class Game:
             # Align the birds AFTER everyone has moved
             for boid in self.boids:
                 boid.alignment(game.boids)
+                boid.separation(game.boids)
+                boid.cohesion(game.boids)
             #'''
 
             # Draw everything on screen once per frame

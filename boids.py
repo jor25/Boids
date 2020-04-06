@@ -30,6 +30,7 @@ class Boid:
         self.true_angle = 0     # Facing directly up at first
         self.orginal_angle = 0
         self.fut_x, self.fut_y = self.get_coords(self.vel, 0)         # Future direction coordinates
+        self.personal_space = int(self.vis_dist*.40)    # Personal boid bubble
         self.sprites = self.make_my_sprites(['images/fish1.png', 'images/fish2.png', 'images/fish3.png', 'images/fish2.png'], '#00FF31')
 
     def make_my_sprites(self, sprite_images, color_tint):
@@ -90,6 +91,7 @@ class Boid:
         :param move:
         :return:
         '''
+        #self.vel = np.random.choice((5,10))
         self.prev_coords.append([self.x, self.y])   # Add to trail
 
         if move == 0:       # Continue straight
@@ -116,8 +118,37 @@ class Boid:
         # Update the hitbox
         self.hitbox = (self.x, self.y, self.w, self.h)
 
-    def separation(self):
-        pass
+    def separation(self, other_boids):
+        # Get the average distance of each of the boids from one another and try to keep them from colliding
+        neighbor_count = 0
+        avg_dist = 0
+        neighbor_ids = []
+        neighbor_dists = []
+
+        for othr_b in other_boids:
+            distance = math.sqrt(((self.x - othr_b.x) ** 2) + ((self.y - othr_b.y) ** 2))
+            if 0 < distance < self.vis_dist:        # In range, get their true angle
+                avg_dist += distance
+                neighbor_count += 1
+                neighbor_ids.append(othr_b.id)      # Get the id
+                neighbor_dists.append(distance)     # Get their distance from this boid
+
+        if neighbor_count > 0:              # At least one boid near me
+            #avg_dist = int(avg_dist/neighbor_count)   # Get the average distance of the boids
+            avg_dist = self.personal_space
+
+            for i, id in enumerate(neighbor_ids):
+                if neighbor_dists[i] > avg_dist:    # If greater than average distance, move towards them
+                    if other_boids[id].true_angle > self.true_angle:
+                        self.true_angle += self.rotate_degree       # Move towards them
+                    else:
+                        self.true_angle -= self.rotate_degree       # Move towards them
+
+                else:       # Less than average distance, move away from them
+                    if other_boids[id].true_angle > self.true_angle:
+                        self.true_angle -= self.rotate_degree       # Move away from them
+                    else:
+                        self.true_angle += self.rotate_degree       # Move away from them
 
     def alignment(self, other_boids):
         neighbor_count = 0
@@ -137,8 +168,27 @@ class Boid:
             else:
                 self.true_angle -= self.rotate_degree
 
-    def cohesion(self):
-        pass
+    def cohesion(self, other_boids):
+        # Boids move towards central location of group in vision range
+        positions = []
+        for othr_b in other_boids:
+            distance = math.sqrt(((self.x - othr_b.x) ** 2) + ((self.y - othr_b.y) ** 2))
+            if 0 < distance < self.vis_dist:        # In range, get their true angle
+                positions.append([othr_b.x, othr_b.y])      # Append their x and y coordinate
+
+        if len(positions) != 0:     # Only if there are boids near me
+            temp_coords = np.array(positions)
+            avg_coords = np.mean(temp_coords, axis=0)   # Get average of both of these coordinates for central point
+
+            if self.x > avg_coords[0]:     # Remember, we're flipped
+                self.true_angle += self.rotate_degree       # Check this later - make sure it's rotating towards central
+            else:
+                self.true_angle -= self.rotate_degree
+
+            if self.y > avg_coords[1]:
+                self.true_angle += self.rotate_degree  # Check this later - make sure it's rotating towards central
+            else:
+                self.true_angle -= self.rotate_degree
 
     def draw(self, window, frames, other_boids):
 
@@ -160,6 +210,9 @@ class Boid:
 
         # Show Range of Vision
         pygame.draw.circle(window, (0,0,255), (self.x, self.y), self.vis_dist, 1)
+
+        # Show Personal bubble range
+        pygame.draw.circle(window, (0, 0, 200), (self.x, self.y), self.personal_space, 1)
 
         # Show connection if in range
         for othr_b in other_boids:
