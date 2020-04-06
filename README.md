@@ -27,4 +27,8 @@ There are three main rules to the movement pattern of boids.
 
 * Draw lines:
     * https://stackoverflow.com/questions/10354638/pygame-draw-single-pixel
+    
+* Find X and Y coordinates with rotations and angles:
+    * https://stackoverflow.com/questions/23280636/python-find-a-x-y-coordinate-for-a-given-point-b-using-the-distance-from-the-po
+    * https://www.youtube.com/watch?v=aHaFwnqH5CU
 

@@ -36,6 +36,12 @@ class Game:
                 move = np.random.choice(2)
                 boid.do_move(self, move)
 
+            #'''
+            # Align the birds AFTER everyone has moved
+            for boid in self.boids:
+                boid.alignment(game.boids)
+            #'''
+
             # Draw everything on screen once per frame
             self.draw_window(frames)
 
@@ -45,7 +51,7 @@ class Game:
         self.window.fill((0, 0, 0))  # Screen Color fill
         # Draw stuff here
         for boid in self.boids:
-            boid.draw(self.window, frames)
+            boid.draw(self.window, frames, self.boids[:boid.id]+self.boids[boid.id+1:])     # Pass all except this boid
 
         pygame.display.update()
 

@@ -8,6 +8,7 @@ from math import sin, cos
 from PIL import Image
 from PIL.ImageColor import getcolor, getrgb
 from PIL.ImageOps import grayscale
+import math
 
 class Boid:
     def __init__(self, id, coords):
@@ -22,12 +23,13 @@ class Boid:
         self.prev_coords = [[self.x, self.y]]
         self.trail_limit = 4
         self.hitbox = (self.x, self.y, self.w, self.h)  # Set up location
-        self.vel = 5            # How fast the player moves - hypotenuse
-        self.vis_dist = 10      # How far can boid see
+        self.vel = 10            # How fast the player moves - hypotenuse
+        self.vis_dist = 75      # How far can boid see
         self.vis_angle = 150    # Vision of +150 or -150 degrees
         self.rotate_degree = 1  # Can rotate 5 degrees per move
         self.true_angle = 0     # Facing directly up at first
         self.orginal_angle = 0
+        self.fut_x, self.fut_y = self.get_coords(self.vel, 0)         # Future direction coordinates
         self.sprites = self.make_my_sprites(['images/fish1.png', 'images/fish2.png', 'images/fish3.png', 'images/fish2.png'], '#00FF31')
 
     def make_my_sprites(self, sprite_images, color_tint):
@@ -102,6 +104,9 @@ class Boid:
         self.x += int(x)  # New x location
         self.y += int(y)  # New y location
 
+        self.fut_x = self.x + int(x)*4  # Potential future x location
+        self.fut_y = self.y + int(y)*4  # Potential future y location
+
         # Hit a wall, then undo the move - Angle will still remain modified
         if not game.screen_w - (self.w + self.vel) > self.x > self.vel or not self.vel < self.y < game.screen_h - (self.h + self.vel):
             #print("undo move")
@@ -114,13 +119,28 @@ class Boid:
     def separation(self):
         pass
 
-    def alignment(self):
-        pass
+    def alignment(self, other_boids):
+        neighbor_count = 0
+        avg = 0
+        # Boid will try to move in the same direction as the other boids in it's vision
+        for othr_b in other_boids:
+            distance = math.sqrt(((self.x - othr_b.x) ** 2) + ((self.y - othr_b.y) ** 2))
+            if 0 < distance < self.vis_dist:        # In range, get their true angle
+                avg += othr_b.true_angle
+                neighbor_count += 1
+
+        if neighbor_count > 0:  # At least one boid near me
+            avg = int(avg/neighbor_count)                   # Get the average of the boids true angle
+
+            if avg > self.true_angle:                       # Adjust my true angle to line up with my neighbors
+                self.true_angle += self.rotate_degree
+            else:
+                self.true_angle -= self.rotate_degree
 
     def cohesion(self):
         pass
 
-    def draw(self, window, frames):
+    def draw(self, window, frames, other_boids):
 
         # Color
         #rand_color = (np.random.choice(255),0,np.random.choice(255))
@@ -134,6 +154,19 @@ class Boid:
                                  (self.prev_coords[i+1][0], self.prev_coords[i+1][1]), i+1)
             else:   # Last Index
                 pygame.draw.line(window, (0, 255, 0), (self.x, self.y), (self.prev_coords[i][0], self.prev_coords[i][1]), i+2)
+
+        # Where I may go next -> direction
+        pygame.draw.line(window, (0, 255, 255), (self.x, self.y), (self.fut_x, self.fut_y), 1)
+
+        # Show Range of Vision
+        pygame.draw.circle(window, (0,0,255), (self.x, self.y), self.vis_dist, 1)
+
+        # Show connection if in range
+        for othr_b in other_boids:
+            distance = math.sqrt(((self.x - othr_b.x) ** 2) + ((self.y - othr_b.y) ** 2))
+            if 0 < distance < self.vis_dist:
+                pygame.draw.line(window, (255, 0, 0), (self.x, self.y), (othr_b.x, othr_b.y), 1)
+
 
         # Draw a randomly collored box as a boid place holder
         #pygame.draw.rect(window, (np.random.choice(255),0,np.random.choice(255)), self.hitbox, 3)
