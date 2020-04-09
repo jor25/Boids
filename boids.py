@@ -82,7 +82,7 @@ class Boid:
         self.true_angle = (self.true_angle + theta) % 360                # Keep track of true angle
         y = radius * sin(self.true_angle)       # Get y coordinate
         x = radius * cos(self.true_angle)       # Get x coordinate
-        return -x, -y                            # Give back flipped x, regular y and return that
+        return x, -y                            # Give back flipped x, regular y and return that
 
     def do_move(self, game, move):
         '''

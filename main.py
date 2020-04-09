@@ -33,7 +33,7 @@ class Game:
             # Allow all boids to make a move once per frame
             for boid in self.boids:
                 #move = boid.active_player()
-                move = np.random.choice(2)
+                move = np.random.choice(3)
                 boid.do_move(self, move)
 
             #'''
